@@ -19,8 +19,15 @@ class UserController extends Controller
      */
     public function createUser(Request $request) 
     {
+        // for testing hit endpoint purposes.
+        // return response()->json([
+        //     'status' => true,
+        //     'data' => "my data",
+        //     'message' => 'new message',
+        // ], 200);
+
         try {
-            //Validated
+            // This object will do basic validation to user.
             $validateUser = Validator::make($request->all(), 
             [
                 'avatar' => 'required',
@@ -28,9 +35,10 @@ class UserController extends Controller
                 'open_id' => 'required',
                 'name' => 'required',
                 'email' => 'required',
-                'password' => 'required|min:6'
+                // 'password' => 'required|min:6'
             ]);
 
+            // Check if we missing some information.
             if($validateUser->fails()){
                 return response()->json([
                     'status' => false,
@@ -48,7 +56,15 @@ class UserController extends Controller
             $map['type'] = $validated['type'];
             $map['open_id'] = $validated['open_id'];
 
+            // Check user information.
             $user = User::where($map)->first();
+            
+            // For debugging.
+            // return response()->json([
+            //     'status' => true,
+            //     'data' => $validated,
+            //     'message' => 'passed validation'
+            // ]);
 
             // wheater user has already logged in or not
             // empty means does not exist
@@ -56,13 +72,16 @@ class UserController extends Controller
             if(empty($user->id)) {
                 // this certain user has never been in our database
                 // our job is to assign the user in database
-                $validated["token"] = md5(uniqid().rand(10000, 99999));
+                $validated["token"] = md5(uniqid().rand(10000, 99999)); // this userid
                 // user first time created
                 $validated['created_at'] = Carbon::now();
+
                 // encrypted password
-                $validated['password'] = Hash::make($validated['password']);
+                // $validated['password'] = Hash::make($validated['password']);
+                
                 // returns the id of the row after saving
                 $userID = User::insertGetId($validated);
+                
                 // user's all the information
                 $userInfo = User::where('id', '=', $userID)->first();
 
@@ -71,21 +90,21 @@ class UserController extends Controller
                 $userInfo->access_token = $accessToken;
                 User::where('id', '=', $userID)->update(['access_token'=>$accessToken]);
                 return response()->json([
-                    'status' => true,
-                    'message' => 'User Created Successfully',
+                    'code' => 200,
+                    'msg' => 'User Created Successfully',
                     'data' => $userInfo
                 ], 200);
             }
             
             // user previously has logged in
             // if user logged in again we generate a new token and update database.
-            $accessToken = $user->createToken(uniqid())->plainTextToken;
+            $accessToken = $user->createToken(uniqid())->plainTextToken; // each time login we create access token
             $user->access_token = $accessToken;
             User::where('open_id', '=', $validated['open_id'])->update(['access_token'=>$accessToken]);
             return response()->json([
-                'status' => true,
-                'message' => 'User logged in Successfully',
-                'token' => $accessToken
+                'code' => 200,
+                'msg' => 'User logged Successfully',
+                'data' => $user
             ], 200);
 
         } catch (\Throwable $th) {
