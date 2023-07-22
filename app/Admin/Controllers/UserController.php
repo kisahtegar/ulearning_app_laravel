@@ -12,7 +12,7 @@ class UserController extends AdminController
 {
     protected $title ='Members';
 
-    // This function used to show grid view user
+    // This function used to show grid view / row of user 
     protected function grid()
     {
         // This models refering to user model
@@ -28,15 +28,15 @@ class UserController extends AdminController
         
         // Disable some actions for user
         
-        $grid->disableActions();
-        $grid->disableCreateButton();
-        $grid->disableExport();
-        $grid->disableFilter();
+        // $grid->disableActions();
+        // $grid->disableCreateButton();
+        // $grid->disableExport();
+        // $grid->disableFilter();
 
         return $grid;
     }
 
-    // This function used to show detail user
+    // This function used to show view detail user
     protected function detail($id)
     {
         $show = new Show(User::findOrFail($id));
@@ -50,8 +50,10 @@ class UserController extends AdminController
         return $show;
     }
 
+    // it get's called when you create a new form or edit a row or info
     protected function form()
     {
+        // dd('Create or edit');
         $form = new Form(new User());
 
         $form->textarea('name', __('Name'));

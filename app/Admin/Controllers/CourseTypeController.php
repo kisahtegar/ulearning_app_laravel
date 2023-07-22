@@ -15,13 +15,14 @@ class CourseTypeController extends AdminController
 {
     protected $title ='Course Type';
 
+    // Actually for showing tree form of the menus.
     public function index(Content $content)
     {
         $tree = new Tree(new CourseType());
         return $content->header('Course Type')->body($tree);
     }
 
-    // 
+    // This function used to show view detail course type
     protected function detail($id)
     {
         // We are looking for a course type, we looking based in database base on id
