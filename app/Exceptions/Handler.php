@@ -23,8 +23,11 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        $this->reportable(function (Throwable $e) {
+        // All we need to do is changing the body of the register method. Instead of returning reportable() 
+        // we will return renderable(). Inside this we catch the error and return in a json format.
+        $this->renderable(function (Throwable $e) {
             //
+            return response(['error' => $e->getMessage()], $e->getCode() ?: 400);
         });
     }
 }

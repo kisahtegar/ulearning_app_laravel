@@ -27,6 +27,7 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // limitiation how many times user can call api.
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
