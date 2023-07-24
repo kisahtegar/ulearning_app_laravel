@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,5 +14,12 @@ use App\Http\Controllers\Api\UserController;
 |
 */
 
-Route::post('/login', [UserController::class, 'createUser']);
-// Route::post('/auth/login', [UserController::class, 'loginUser']);
+Route::group(['namespace'=>'Api'], function() {
+    // Route::post('/login', [UserController::class, 'createUser']);
+    Route::post('/login', 'UserController@createUser'); // since we using global namespace we should write like this.
+
+    // authentication middleware.
+    Route::group(['middleware' => ['auth:sanctum']], function() {
+        Route::any('/courseList', 'CourseController@courseList');
+    });
+});
