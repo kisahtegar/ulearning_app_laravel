@@ -47,10 +47,11 @@ class CourseController extends Controller
                 'price',
                 'lesson_num',
                 'video_length',
-                'thumbnail'
+                'thumbnail',
+                'downloadable_res'
             )->where(
                 'id', '=', $id
-            )->get();
+            )->first();
 
             // then return the result.
             return response()->json([
