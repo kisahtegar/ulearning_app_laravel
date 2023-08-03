@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use Illuminate\Http\Request;
@@ -106,5 +107,55 @@ class PayController extends Controller
                 'error' => $th->getMessage()
             ], 500);
         }
+    }
+
+    // Web hooks
+    public function web_go_hooks()
+    {
+       // Log::info("11211-------");
+        Stripe::setApiKey('sk_test_51NZcPtCXCfIRAeZju3jeU4UtxGS5sAdaIWVefOnqzQFjSQ8tZ9nRUTxPisk5Nbgn5e5MkfZ3o7wbpf46tUHpucZt008grG1R37');
+        $endpoint_secret = 'whsec_PmMW6etZBPehxXnYqUz92SFBgxWodUH8';
+        $payload = @file_get_contents('php://input');
+        $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+        $event = null;
+      //  Log::info("payload----" . $payload);
+
+        try {
+            $event = \Stripe\Webhook::constructEvent(
+                $payload,
+                $sig_header,
+                $endpoint_secret
+            );
+        } catch (\UnexpectedValueException $e) {
+            // Invalid payload
+            // Log::info("UnexpectedValueException" . $e);
+            http_response_code(400);
+            exit();
+        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+            // Invalid signature
+            // Log::info("SignatureVerificationException" . $e);
+            http_response_code(400);
+            exit();
+        }
+     //   Log::info("event---->" . $event);
+        // Handle the checkout.charge.succeeded
+        if ($event->type == 'charge.succeeded') {
+            $session = $event->data->object;
+           // Log::info("event->data->object---->" . $session);
+            $metadata = $session["metadata"];
+            $order_num = $metadata->order_num;
+            $user_token = $metadata->user_token;
+          //  Log::info("order_id---->" . $order_num);
+            $map = [];
+            $map["status"] = 1;
+            $map["updated_at"] = Carbon::now();
+            $whereMap = [];
+            $whereMap["user_token"] = $user_token;
+            $whereMap["id"] = $order_num;
+            Order::where($whereMap)->update($map);
+        }
+
+
+        http_response_code(200);
     }
 }
